@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using JobsWebApiService.Commands;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using SortingWebApi.Common;
 using SortingWebApi.JobsScheduler;
+using SortingWebApi.Model;
 
 namespace SortingWebApi.Commands
 {
@@ -18,6 +20,7 @@ namespace SortingWebApi.Commands
         private readonly IDistributedCache _cache;
         private readonly IJobsQueue _jobsQueue;
         private readonly ILogger<ScheduleJobCommandHandler> _logger;
+        private readonly TimeSpan _slidingExpiration = TimeSpan.FromMinutes(10); //TODO: move to configuration and consider to use Absolute relative expiration for cache entries.
 
 
         public ScheduleJobCommandHandler(IDistributedCache cache, IJobsQueue jobsQueue, ILogger<ScheduleJobCommandHandler>  logger)
@@ -35,7 +38,7 @@ namespace SortingWebApi.Commands
             {
                 // Create jobDescriptor
                 var job = new JobDescriptor(Guid.NewGuid().ToString(), command.JobType, DateTime.UtcNow,
-                    command.JobPayload, new JobSchedulingOptions() {SlidingExpiration = TimeSpan.FromMinutes(1)});
+                    command.JobPayload, new JobSchedulingOptions() {SlidingExpiration = _slidingExpiration });
 
                 var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(job));
 
@@ -44,7 +47,8 @@ namespace SortingWebApi.Commands
                     new DistributedCacheEntryOptions() {SlidingExpiration = job.JobSchedulingOptions.SlidingExpiration},
                     cancellationToken);
 
-                await _jobsQueue.Schedule(job, cancellationToken);
+                // Schedule jobEvent for notifying workers
+                await _jobsQueue.Schedule(new JobEvent { Id = job.Id, JobType = job.JobType }, cancellationToken);
 
                 return job;
             }

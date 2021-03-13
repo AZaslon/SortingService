@@ -7,6 +7,7 @@ using NSubstitute;
 using NUnit.Framework;
 using SortingWebApi.Commands;
 using SortingWebApi.JobsScheduler;
+using SortingWebApi.Model;
 using Arg = NSubstitute.Arg;
 
 namespace SortingWebApi.Unit.Tests
@@ -34,7 +35,9 @@ namespace SortingWebApi.Unit.Tests
             var job = await sut.HandleCommand(command, CancellationToken.None);
 
             //Assert
-            Assert.IsNotNull(job.JobType);
+            Assert.IsNotNull(job);
+            Assert.IsNotEmpty(job.JobType);
+            Assert.IsNotEmpty(job.Id);
         }
 
 
@@ -57,6 +60,8 @@ namespace SortingWebApi.Unit.Tests
             Assert.IsNotNull(job.JobType);
             await cache.Received(1)
                 .SetAsync(Arg.Any<string>(), Arg.Any<byte[]>(), Arg.Any<DistributedCacheEntryOptions>());
+
+            //TODO: extend test wit more asserts on cache entry
         }
 
 
@@ -77,7 +82,9 @@ namespace SortingWebApi.Unit.Tests
 
             //Assert
             await queue.Received(1)
-                .Schedule(Arg.Any<JobDescriptor>(), Arg.Any<CancellationToken>());
+                .Schedule(Arg.Any<JobEvent>(), Arg.Any<CancellationToken>());
+
+            //TODO: extend test wit more asserts on event
         }
 
     }

@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace JobsWebApiService.Commands
+namespace SortingWebApi.Common
 {
     public class JobSchedulingOptions
     {

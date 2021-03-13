@@ -1,15 +1,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using SortAsc.Worker.Service.JobsQueue;
+using SortingWebApi.Common;
 
 namespace SortAsc.Worker.Service
 {
@@ -25,28 +19,30 @@ namespace SortAsc.Worker.Service
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddSingleton<IRetryPolicyFactory, RetryPolicyFactory>();
+
+            services.AddDistributedRedisCache(options =>
+            {
+                options.Configuration = Configuration.GetSection("Redis")["ConnectionString"];
+                options.InstanceName = Configuration.GetSection("Redis")["Instance"];
+
+            });
+            services.AddOptions<KafkaJobsQueueOptions>()
+                .Bind(Configuration.GetSection(KafkaJobsQueueOptions.Key))
+                .ValidateDataAnnotations();
+
+            services.AddSingleton<IJobProcessingLogic, SortAscProcessingLogic>();
+            services.AddSingleton<IMessageConverter, MessageConverter>();
+            services.AddTransient<IJobsListener, KafkaJobsListener>();
+
+
+           
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            //TODO: uncomment once health checks and monitoring endpoints are implemented  
-            //app.UseHttpsRedirection();
-
-            //app.UseRouting();
-
-            //app.UseAuthorization();
-
-            //app.UseEndpoints(endpoints =>
-            //{
-            //    endpoints.MapControllers();
-            //});
+            
         }
     }
 }

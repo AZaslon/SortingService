@@ -6,65 +6,49 @@ using CloudNative.CloudEvents.Kafka;
 using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SortingWebApi.Common;
-using SortingWebApi.Model;
+using SortAsc.Worker.Service.JobsQueue;
+using SortAsc.Worker.Service.Model;
 
-namespace SortingWebApi.JobsScheduler
+namespace SortAsc.Worker.Service.Integration.Tests
 {
-    //TODO: Refactoring is necessary - class looks bulky 
-
-    /// <summary>
-    /// Kafka based implementation of Job queue.
-    /// </summary>
-    public class KafkaJobsQueue : IJobsQueue, IDisposable
+    public class TestsKafkaJobsQueue :  IDisposable
     {
         private readonly KafkaJobsQueueOptions _options;
-        private readonly ILogger<KafkaJobsQueue> _logger;
-        private IProducer<string, byte[]>? _producer;
-        private readonly IRetryPolicyFactory _retrier;
+        private readonly IProducer<string, byte[]> _producer;
 
-        public KafkaJobsQueue(
-            IOptions<KafkaJobsQueueOptions> options,
-            ILogger<KafkaJobsQueue> logger,
-            IRetryPolicyFactory retrierFactory)
+        public TestsKafkaJobsQueue(KafkaJobsQueueOptions options)
         {
-            _options = (options ?? throw new ArgumentNullException(nameof(options))).Value
-                       ?? throw new ArgumentException($"{nameof(options)} parameter does not contain a valid value",
-                           nameof(options));
-
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _retrier = retrierFactory ?? throw new ArgumentNullException(nameof(retrierFactory));
+            _options = options;
 
             _producer = Build(_options);
         }
 
 
         /// <inheritdoc />
-        public async Task Schedule(JobEvent jobDescriptor, CancellationToken cancellationToken)
+        public async Task Schedule(JobEvent jobEvent, CancellationToken cancellationToken)
         {
-            var cloudEvent = ToCloudEvent(jobDescriptor);
+            var cloudEvent = ToCloudEvent(jobEvent);
             
             var message = new KafkaCloudEventMessage(cloudEvent, ContentMode.Structured, new JsonEventFormatter());
 
-            await _retrier.Create<Exception>(_logger)
-                .ExecuteAsync(() => Produce(jobDescriptor.JobType, message, cancellationToken)).ConfigureAwait(false);
+            await Produce(_options.TopicName, message, cancellationToken).ConfigureAwait(false);
         }
 
-        public CloudEvent ToCloudEvent(JobEvent jobDescriptor)
+        public CloudEvent ToCloudEvent(JobEvent jobEvent)
         {
-            if (jobDescriptor == null)
+            if (jobEvent == null)
             {
-                throw new ArgumentNullException(nameof(jobDescriptor));
+                throw new ArgumentNullException(nameof(jobEvent));
             }
 
             var cloudEvent = new CloudEvent(
                 CloudEventsSpecVersion.V1_0,
-                jobDescriptor.JobType,
+                jobEvent.JobType,
                 new Uri("http://dummyUri"),
-                jobDescriptor.Id,
+                jobEvent.Id,
                 DateTime.UtcNow)
             {
-                Data = jobDescriptor
+                Data = jobEvent
             };
 
             return cloudEvent;
@@ -123,8 +107,6 @@ namespace SortingWebApi.JobsScheduler
             {
                 throw new ApplicationException($"job scheduling error: Queue returned unexpected persistence status {deliveryResult.Status}");
             }
-
-            _logger.LogDebug($"Job scheduling info: Message delivered to queue '{deliveryResult.TopicPartitionOffset}'");
         }
 
     }

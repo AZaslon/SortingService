@@ -2,8 +2,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using JobsWebApiService.Commands;
-using SortingWebApi.Commands;
+using SortingWebApi.Model;
 
 namespace SortingWebApi.JobsScheduler
 {
@@ -12,9 +11,9 @@ namespace SortingWebApi.JobsScheduler
         /// <summary>
         /// This method adds job to processing queue.
         /// </summary>
-        /// <param name="jobDescriptor">Descriptor of scheduled job.</param>
+        /// <param name="jobEvent">Descriptor of scheduled job.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns></returns>
-        Task Schedule(JobDescriptor jobDescriptor, CancellationToken cancellationToken);
+        Task Schedule(JobEvent jobEvent, CancellationToken cancellationToken);
     }
 }

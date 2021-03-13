@@ -93,7 +93,7 @@ namespace SortingWebApi.Integration.Tests
             };
 
             var stringContent = new StringContent(JObject.FromObject(request).ToString(), Encoding.UTF8, "application/json");
-            using var consumer = new ConsumerBuilder<Ignore, string>(_consumerConfig).Build();
+            using var consumer = new ConsumerBuilder<string, byte[]>(_consumerConfig).Build();
             consumer.Subscribe("sorting_asc");
 
             //Act

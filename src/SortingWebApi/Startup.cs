@@ -32,7 +32,6 @@ namespace JobsWebApiService
         {
             services.AddSingleton<IRetryPolicyFactory, RetryPolicyFactory>();
 
-            var t = Configuration.GetSection("Redis")["ConnectionString"];
             services.AddDistributedRedisCache(options =>
             {
                 options.Configuration = Configuration.GetSection("Redis")["ConnectionString"];

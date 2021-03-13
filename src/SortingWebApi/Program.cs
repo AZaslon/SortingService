@@ -6,6 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NLog;
+using NLog.Extensions.Logging;
+using NLog.Web;
 
 namespace JobsWebApiService
 {
@@ -18,6 +21,13 @@ namespace JobsWebApiService
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureLogging((context, builder) =>
+                {
+                    builder.ClearProviders();
+                    LogManager.Configuration = new NLogLoggingConfiguration(context.Configuration.GetSection("NLog"));
+                    LogManager.AutoShutdown = false;
+                })
+                .UseNLog()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

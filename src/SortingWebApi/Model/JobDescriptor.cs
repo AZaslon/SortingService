@@ -1,7 +1,7 @@
 ﻿using System;
-using JobsWebApiService.Commands;
+using SortingWebApi.Common;
 
-namespace SortingWebApi.Commands
+namespace SortingWebApi.Model
 {
     public class JobDescriptor
     {
