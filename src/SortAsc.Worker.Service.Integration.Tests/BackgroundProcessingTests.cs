@@ -68,7 +68,7 @@ namespace SortAsc.Worker.Service.Integration.Tests
             await Task.Delay(timeout);
 
             // Assert
-            await logic.Received(1).ExecuteAsync(Arg.Any<JobEvent>(), Arg.Any<CancellationToken>());
+            await logic.Received(1).ExecuteAsync(Arg.Is<JobEvent>(e => e.Id == job.Id), Arg.Any<CancellationToken>());
         }
     }
 }
