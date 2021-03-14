@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  sortasc.worker.service:
+    image: ${DOCKER_REGISTRY-}sortascworkerservice
+    build:
+      context: .
+      dockerfile: src/SortAsc.Worker.Service/Dockerfile
+
+  sortingwebapi:
+    image: ${DOCKER_REGISTRY-}sortingwebapi
+    build:
+      context: .
+      dockerfile: src/SortingWebApi/Dockerfile
+

@@ -3,10 +3,10 @@
   <PropertyGroup Label="Globals">
     <ProjectVersion>2.1</ProjectVersion>
     <DockerTargetOS>Linux</DockerTargetOS>
-    <ProjectGuid>6107a585-c401-40c4-a0e2-284f61eeae6a</ProjectGuid>
+    <ProjectGuid>057aa342-16aa-4916-a6e0-9efde50493d1</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/weatherforecast</DockerServiceUrl>
-    <DockerServiceName>sortingwebapi</DockerServiceName>
+    <DockerServiceName>sortasc.worker.service</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
     <None Include="docker-compose.dependencies.local.yml" />
