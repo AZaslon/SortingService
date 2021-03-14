@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -43,18 +45,26 @@ namespace SortAsc.Worker.Service.Integration.Tests
         }
 
         [Test]
-        public async Task BackgroundProcessing_JobInQueue_JobEventIsReadAndSentToProcessing()
+        public async Task BackgroundProcessing_ValidJobDescriptor_PayloadIsProcessed()
         {
             // Arrange
             var jobType = "sorting_asc";
 
-            var jobEvent = new JobEvent{Id = Guid.NewGuid().ToString(), JobType = jobType};
+            var job = new JobDescriptor(
+                Guid.NewGuid().ToString(), 
+                jobType, DateTime.UtcNow, 
+                "[1,3,2,6,3]",
+                new JobSchedulingOptions() { SlidingExpiration = TimeSpan.FromMinutes(10)});
 
-            var logic = Substitute.For<IJobProcessingLogic>();
-            var logger = Substitute.For<ILogger<BackgroundJobProcessing>>();
+            var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(job));
+
+            // Place job into Cache
+            await _cache.SetAsync(job.Id, bytes,
+                new DistributedCacheEntryOptions() { SlidingExpiration = job.JobSchedulingOptions.SlidingExpiration },
+                CancellationToken.None);
 
             //Act
-            await _logic.ExecuteAsync(jobEvent, CancellationToken.None);
+            await _logic.ExecuteAsync(job, CancellationToken.None);
 
             // Assert
             
