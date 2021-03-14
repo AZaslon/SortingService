@@ -72,23 +72,24 @@ namespace SortAsc.Worker.Service.Integration.Tests
             var logic = Substitute.For<IJobProcessingLogic>();
             var host = Substitute.For<IHostApplicationLifetime>();
 
-            TimeSpan timeout = TimeSpan.FromSeconds(60);
+            TimeSpan timeout = TimeSpan.FromSeconds(1);
             var cst = new CancellationTokenSource(timeout);
+
+            //Add jobDescriptor
+            await _cache.SetAsync(jobDescriptor.Id, jobDescriptorBytes,
+                new DistributedCacheEntryOptions() { SlidingExpiration = TimeSpan.FromMinutes(1) }, cst.Token);
+            // Schedule job for processing
+            await _testJobScheduler.Schedule(job, CancellationToken.None).ConfigureAwait(false);
 
             //Act
             var sut = new BackgroundJobProcessing(_jobsListener, logic, _cache,  host, _retryPolicy, _logger);
             var startTask = sut.StartAsync(CancellationToken.None);
-            // populate job for processing
-            await _cache.SetAsync(jobDescriptor.Id, jobDescriptorBytes,
-                new DistributedCacheEntryOptions() {SlidingExpiration = TimeSpan.FromMinutes(1)}, cst.Token);
-            await _testJobScheduler.Schedule(job, CancellationToken.None).ConfigureAwait(false);
 
             await Task.Delay(timeout);
 
             await sut.StopAsync(cst.Token);  // bring exceptions to main thread
 
             // Assert
-            await logic.Received(1).ExecuteAsync(Arg.Any<JobDescriptor>(), Arg.Any<CancellationToken>());
             await logic.Received(1).ExecuteAsync(Arg.Is<JobDescriptor>(e => e.Id == job.Id && e.JobType == job.JobType), Arg.Any<CancellationToken>());
             //TODO: check other fields in assert
         }

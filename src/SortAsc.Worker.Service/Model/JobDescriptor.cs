@@ -35,5 +35,6 @@ namespace SortAsc.Worker.Service.Model
         public DateTime LastUpdated { get; set; }
         public JobStatus Status { get; set; } = JobStatus.Created;
         public string? ErrorMsg { get; set; }
+        public string? Result { get; set; }
     }
 }

@@ -87,7 +87,7 @@ namespace SortAsc.Worker.Service.Integration.Tests
                 Acks = Acks.All,
                 LogConnectionClose = false,
 
-                // This article (https://docs.microsoft.com/en-us/azure/event-hubs/apache-kafka-configurations) recommends setting these values:
+                // This article (https://docs.microsoft.com/en-us/azure/event-hubs/apache-kafka-configurations) recommends setting for this values:
                 SocketKeepaliveEnable = true,
                 MetadataMaxAgeMs = 180000,
                 RequestTimeoutMs = 30000
