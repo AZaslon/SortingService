@@ -7,10 +7,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
-COPY ["SortAsc.Worker.Service/SortAsc.Worker.Service.csproj", "SortAsc.Worker.Service/"]
-RUN dotnet restore "SortAsc.Worker.Service/SortAsc.Worker.Service.csproj"
+COPY ["src/SortAsc.Worker.Service/SortAsc.Worker.Service.csproj", "src/SortAsc.Worker.Service/"]
+RUN dotnet restore "src/SortAsc.Worker.Service/SortAsc.Worker.Service.csproj"
 COPY . .
-WORKDIR "/src/SortAsc.Worker.Service"
+WORKDIR "/src/src/SortAsc.Worker.Service"
 RUN dotnet build "SortAsc.Worker.Service.csproj" -c Release -o /app/build
 
 FROM build AS publish

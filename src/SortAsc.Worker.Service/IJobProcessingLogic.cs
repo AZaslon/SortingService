@@ -6,6 +6,6 @@ namespace SortAsc.Worker.Service
 {
     public interface IJobProcessingLogic
     {
-        Task ExecuteAsync(JobEvent job, CancellationToken cancellationToken);
+        Task ExecuteAsync(JobDescriptor job, CancellationToken cancellationToken);
     }
 }
