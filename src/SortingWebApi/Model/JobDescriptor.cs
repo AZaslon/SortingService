@@ -1,24 +1,41 @@
 ﻿using System;
-using SortingWebApi.Common;
 
 namespace SortingWebApi.Model
 {
+    public enum JobStatus
+    {
+        Created = 10,
+
+        InProgress = 20,
+
+        Finished = 30,
+
+        Failed = 50
+    }
+
     public class JobDescriptor
     {
         public JobDescriptor(string id, string jobType, DateTime createdDateTime, string payload,
-            JobSchedulingOptions jobSchedulingOptions)
+            JobSchedulingOptions? jobSchedulingOptions = null, JobStatus status = JobStatus.Created,
+            string? errorMsg = null)
         {
             Id = id;
             JobType = jobType;
             CreatedDateTime = createdDateTime;
             Payload = payload;
-            JobSchedulingOptions = jobSchedulingOptions ?? new JobSchedulingOptions();
+            ErrorMsg = errorMsg;
+            JobSchedulingOptions = jobSchedulingOptions ?? new JobSchedulingOptions()
+                {SlidingExpiration = TimeSpan.FromMinutes(10)};
         }
 
         public string Id { get; set; }
         public string JobType { get; set; }
         public DateTime CreatedDateTime { get; set; }
-        public string Payload { get; set;  }
+        public string Payload { get; set; }
         public JobSchedulingOptions JobSchedulingOptions { get; set; }
+        public DateTime LastUpdated { get; set; }
+        public JobStatus Status { get; set; } = JobStatus.Created;
+        public string? ErrorMsg { get; set; }
+        public string? Result { get; set; }
     }
 }

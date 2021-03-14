@@ -1,4 +1,4 @@
-﻿namespace SortingWebApi.Models
+﻿namespace SortingWebApi.Model
 {
     public class ScheduleJobResponse
     {

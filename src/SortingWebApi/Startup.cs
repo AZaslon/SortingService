@@ -1,22 +1,18 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using JobsWebApiService.Commands;
-using Microsoft.Extensions.Caching.Redis;
 using SortingWebApi.Commands;
 using SortingWebApi.Common;
+using SortingWebApi.Controllers;
+using SortingWebApi.JobsIterator;
+using SortingWebApi.JobsQueueListener;
 using SortingWebApi.JobsScheduler;
+using SortingWebApi.Model;
+using KafkaJobsQueueOptions = SortingWebApi.JobsScheduler.KafkaJobsQueueOptions;
 
-namespace JobsWebApiService
+namespace SortingWebApi
 {
     public class Startup
     {
@@ -46,6 +42,11 @@ namespace JobsWebApiService
                 .Bind(Configuration.GetSection(KafkaJobsQueueOptions.Key))
                 .ValidateDataAnnotations();
 
+            services.AddTransient<IMessageConverter, MessageConverter>();
+
+            services.AddTransient<IPendingJobIdsIterator, KafkaPendingJobIdsIterator>();
+            
+            services.AddTransient<IQuery<JobsStatisticsRequest, JobDescriptor>, JobsStatisticsQuery>();
 
             services.AddControllers();
            

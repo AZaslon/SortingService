@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using JobsWebApiService.Commands;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using SortingWebApi.Common;
 using SortingWebApi.JobsScheduler;
 using SortingWebApi.Model;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace SortingWebApi.Commands
 {
@@ -40,7 +41,7 @@ namespace SortingWebApi.Commands
                 var job = new JobDescriptor(Guid.NewGuid().ToString(), command.JobType, DateTime.UtcNow,
                     command.JobPayload, new JobSchedulingOptions() {SlidingExpiration = _slidingExpiration });
 
-                var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(job));
+                var bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(job));
 
                 // Place jobDescriptor into Cache
                 await _cache.SetAsync(job.Id, bytes,

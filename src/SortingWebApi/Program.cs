@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using NLog;
 using NLog.Extensions.Logging;
 using NLog.Web;
+using SortingWebApi;
 
 namespace JobsWebApiService
 {
