@@ -6,8 +6,6 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using NLog.Fluent;
-using Polly.Retry;
 using SortAsc.Worker.Service.JobsQueue;
 using SortAsc.Worker.Service.Model;
 using SortingWebApi.Common;
@@ -135,10 +133,10 @@ namespace SortAsc.Worker.Service
             _logger.LogDebug("Successfully processed job: " + jobEvent.Id);
         }
 
-        private async Task<bool> TryPushJobFailedNotification(JobDescriptor job, string failreason, CancellationToken cancellationToken)
+        private async Task<bool> TryPushJobFailedNotification(JobDescriptor job, string failReason, CancellationToken cancellationToken)
         {
             job.Status = JobStatus.Failed;
-            job.ErrorMsg = failreason;
+            job.ErrorMsg = failReason;
             return await TryUpsertJobInCache(job, cancellationToken);
         }
 
