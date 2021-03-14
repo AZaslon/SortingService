@@ -54,35 +54,7 @@ namespace SortingWebApi.Integration.Tests
 
         }
 
-
-        [Test]
-        public async Task ScheduleJob_ValidInput_ReturnsJobObject()
-        {
-            // Act
-            var response = await _client.GetAsync("api/jobs/get/testJobId").ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            var responseString = await response.Content.ReadAsStringAsync();
-            // Assert
-            Assert.AreEqual("{\"id\":\"testJobId\"}", responseString);
-        }
-
-        [Test]
-        public async Task ScheduleJob_ValidInput_JobIsQueued()
-        {
-
-
-
-            // Act
-            var response = await _client.GetAsync("api/jobs/get/testJobId").ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            var responseString = await response.Content.ReadAsStringAsync();
-
-
-
-            // Assert
-            Assert.AreEqual("{\"id\":\"testJobId\"}", responseString);
-        }
-
+        
         [Test]
         public async Task WriteAsync_ValidConfigurations_MessageIsInKafka()
         {
