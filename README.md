@@ -49,3 +49,12 @@ It should require minimal necessary actions to deploy/test locally, all necessar
 - Make sure Infrastructure services are running, see **Infrastructure**
 - Open solution in Visual Studio
 - Execute tests with tests runner (*** !*!  note to myself Verify  if no issues wit MSTests !*! ***  ), alternatively build solution and execute tests with any tests runner supporting of NUnit3 tests type.
+
+
+##### Development
+
+(*** !*!  Styleguides section !*! ***  )
+(*** !*!  Project structure section !*! ***  )
+(*** !*!  Naming conventions section !*! ***  )
+(*** !*!  Test coverage requirements/ guides section !*! ***  )
+
