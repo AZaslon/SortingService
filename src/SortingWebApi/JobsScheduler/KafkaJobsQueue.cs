@@ -22,6 +22,7 @@ namespace SortingWebApi.JobsScheduler
         private readonly ILogger<KafkaJobsQueue> _logger;
         private IProducer<string, byte[]>? _producer;
         private readonly IRetryPolicyFactory _retrier;
+        TimeSpan timeout = TimeSpan.FromSeconds(5);
 
         public KafkaJobsQueue(
             IOptions<KafkaJobsQueueOptions> options,
@@ -116,8 +117,10 @@ namespace SortingWebApi.JobsScheduler
             {
                 return;
             }
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(timeout);
 
-            var deliveryResult = await _producer.ProduceAsync(topic, message, cancellationToken).ConfigureAwait(false);
+            var deliveryResult = await _producer.ProduceAsync(topic, message, cts.Token).ConfigureAwait(false);
 
             if (deliveryResult.Status != PersistenceStatus.Persisted)
             {

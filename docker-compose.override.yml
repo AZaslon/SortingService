@@ -5,7 +5,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=https://+:443;http://+:80
-      - KafkaJobsQueueOptions__BootstrapServers=kafka:9093
+      - KafkaJobsQueueOptions__BootstrapServers=kafka:9095
       - Redis__ConnectionString=redis:6379
     depends_on:
       - "kafka"
@@ -22,7 +22,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=https://+:443;http://+:80
-      - KafkaJobsQueueOptions__BootstrapServers=kafka:9093
+      - KafkaJobsQueueOptions__BootstrapServers=kafka:9095
       - Redis__ConnectionString=redis:6379
     depends_on:
       - "kafka"
@@ -37,7 +37,7 @@ services:
   sortingwebapi:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - KafkaJobsQueueOptions__BootstrapServers=kafka:9093
+      - KafkaJobsQueueOptions__BootstrapServers=kafka:9095
       - Redis__ConnectionString=redis:6379
     depends_on:
       - "kafka"
@@ -53,24 +53,23 @@ services:
   zookeeper:
     image: 'bitnami/zookeeper:latest'
     ports:
-      - '2181:2181'
+      - '2181'
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
 
   kafka:
     image: 'bitnami/kafka:latest'
     ports:
-      - '9092:9092'
-      - '9093:9093'
+      - '9095'
     environment:
       - KAFKA_BROKER_ID=1
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_LISTENERS=CLIENT://:9093,EXTERNAL://:9092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9093,EXTERNAL://localhost:9092
-      - KAFKA_CFG_NUM_PARTITIONS=2
+      - KAFKA_CFG_LISTENERS=CLIENT://:9095
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9095
+      - KAFKA_CFG_NUM_PARTITIONS=20
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
     depends_on:
       - "zookeeper"
@@ -78,7 +77,7 @@ services:
   redis:
         image: redis:latest
         ports:
-            - 6379:6379
+            - "6379"
         volumes:
             - ./Redis/redis.conf:/redis.conf
         command: [ "redis-server", "/redis.conf" ]
