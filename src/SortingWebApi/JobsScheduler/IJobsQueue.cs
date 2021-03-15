@@ -1,6 +1,4 @@
-﻿// © 2021 Sitecore Corporation A/S. All rights reserved. Sitecore® is a registered trademark of Sitecore Corporation A/S.
-
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using SortingWebApi.Model;
 

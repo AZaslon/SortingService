@@ -12,7 +12,7 @@ namespace SortingWebApi.JobsScheduler
         /// Gets or sets the bootstrap servers.
         /// </summary>
         [Required(AllowEmptyStrings = false)] 
-        public string BootstrapServers { get; set; }
+        public string? BootstrapServers { get; set; }
 
         /// <summary>
         /// Gets or sets SASL user name.

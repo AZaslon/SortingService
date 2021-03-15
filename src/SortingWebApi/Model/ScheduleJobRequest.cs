@@ -8,6 +8,6 @@
         /// <summary>
         /// Payload for job.
         /// </summary>
-        public int[] Payload { get; set; }
+        public int[]? Payload { get; set; }
     }
 }

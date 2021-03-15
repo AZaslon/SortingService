@@ -33,7 +33,7 @@ namespace SortingWebApi.Queries
 
         //TODO: Implement pagination
         /// <inheritdoc />
-        public async  Task<JobDescriptor> ExecuteRequest(GetJobStatisticByIdRequest request,  [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async  Task<JobDescriptor> ExecuteRequest(GetJobStatisticByIdRequest request, CancellationToken cancellationToken)
         {
                     JobDescriptor job = new JobDescriptor(request.Id, request.JobType, DateTime.MinValue, string.Empty, null, JobStatus.Failed, "Job does not exist");
                     

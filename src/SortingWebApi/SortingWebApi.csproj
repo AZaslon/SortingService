@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp5.0</TargetFramework>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <UserSecretsId>da87be63-729c-411c-9171-6637800aa0a6</UserSecretsId>
     <DockerfileContext>..\..</DockerfileContext>
     <Nullable>enable</Nullable>
   </PropertyGroup>

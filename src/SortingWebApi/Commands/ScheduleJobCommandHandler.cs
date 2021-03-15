@@ -48,7 +48,7 @@ namespace SortingWebApi.Commands
                     cancellationToken);
 
                 // Schedule jobEvent for notifying workers
-                await _jobsQueue.Schedule(new JobEvent { Id = job.Id, JobType = job.JobType }, cancellationToken);
+                await _jobsQueue.Schedule(new JobEvent (job.Id, job.JobType ), cancellationToken);
 
                 return job;
             }
