@@ -17,6 +17,7 @@ services:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
 
+
   sortasc.worker.service.replica:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -69,6 +70,7 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
       - KAFKA_CFG_LISTENERS=CLIENT://:9093,EXTERNAL://:9092
       - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9093,EXTERNAL://localhost:9092
+      - KAFKA_CFG_NUM_PARTITIONS=2
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
     depends_on:
       - "zookeeper"
