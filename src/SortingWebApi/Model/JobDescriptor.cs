@@ -1,4 +1,6 @@
 ﻿using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace SortingWebApi.Model
 {
@@ -23,9 +25,10 @@ namespace SortingWebApi.Model
             JobType = jobType;
             CreatedDateTime = createdDateTime;
             Payload = payload;
+            Status = status;
             ErrorMsg = errorMsg;
             JobSchedulingOptions = jobSchedulingOptions ?? new JobSchedulingOptions()
-                {SlidingExpiration = TimeSpan.FromMinutes(10)};
+                {SlidingExpiration = TimeSpan.FromMinutes(60)};
         }
 
         public string Id { get; set; }
@@ -34,7 +37,7 @@ namespace SortingWebApi.Model
         public string Payload { get; set; }
         public JobSchedulingOptions JobSchedulingOptions { get; set; }
         public DateTime LastUpdated { get; set; }
-        public JobStatus Status { get; set; } = JobStatus.Created;
+        public JobStatus Status { get; set; }
         public string? ErrorMsg { get; set; }
         public string? Result { get; set; }
     }

@@ -3,7 +3,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Confluent.Kafka;
-using JobsWebApiService;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -11,7 +10,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SortingWebApi.JobsScheduler;
-using SortingWebApi.Model;
 
 namespace SortingWebApi.Integration.Tests
 {
@@ -29,8 +27,9 @@ namespace SortingWebApi.Integration.Tests
             _factory = new WebApplicationFactory<Startup>().WithWebHostBuilder(builder => { });
             _client = _factory.CreateClient();
 
-            _kafkaJobsQueueOptions = _factory.Services.GetService<IOptions<KafkaJobsQueueOptions>>()?.Value ?? throw new ArgumentNullException(nameof(IOptions<KafkaJobsQueueOptions>.Value));
-            
+            _kafkaJobsQueueOptions = _factory.Services.GetService<IOptions<KafkaJobsQueueOptions>>()?.Value ??
+                                     throw new ArgumentNullException(nameof(IOptions<KafkaJobsQueueOptions>.Value));
+
             _consumerConfig = new ConsumerConfig
             {
                 BootstrapServers = _kafkaJobsQueueOptions.BootstrapServers,
@@ -65,14 +64,15 @@ namespace SortingWebApi.Integration.Tests
             var stringContent =
                 new StringContent(JObject.FromObject(request).ToString(), Encoding.UTF8, "application/json");
 
-            var scheduleJobResponse = await _client.PostAsync("api/sorting/sortasync", stringContent).ConfigureAwait(false);
+            var scheduleJobResponse =
+                await _client.PostAsync("api/sorting/sortasync", stringContent).ConfigureAwait(false);
             scheduleJobResponse.EnsureSuccessStatusCode();
 
             scheduleJobResponse = await _client.PostAsync("api/sorting/sortasync", stringContent).ConfigureAwait(false);
             scheduleJobResponse.EnsureSuccessStatusCode();
 
             //Act
-            
+
             var response = await _client.GetAsync("/").ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
@@ -92,19 +92,20 @@ namespace SortingWebApi.Integration.Tests
         public async Task WriteAsync_ValidConfigurations_MessageIsInKafka()
         {
             //Arrange
-            var request = new 
+            var request = new
             {
                 Payload = new[] {9, 8, 7, 6, 5, 4, 3, 2, 1}
             };
 
-            var stringContent = new StringContent(JObject.FromObject(request).ToString(), Encoding.UTF8, "application/json");
+            var stringContent =
+                new StringContent(JObject.FromObject(request).ToString(), Encoding.UTF8, "application/json");
             using var consumer = new ConsumerBuilder<string, byte[]>(_consumerConfig).Build();
             consumer.Subscribe("sorting_asc");
 
             //Act
             var response = await _client.PostAsync("api/sorting/sortasync", stringContent).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            
+
             var responseString = await response.Content.ReadAsStringAsync();
 
             //Assert
@@ -129,6 +130,31 @@ namespace SortingWebApi.Integration.Tests
             }
 
             //TODO: Add asserting to validate event 
+        }
+
+
+        [Test]
+        public async Task Get_ThereIsJobScheduled_JobReturnedByID()
+        {
+            //Arrange
+            var request = new
+            {
+                Payload = new[] {9, 8, 7, 6, 5, 4, 3, 2, 1}
+            };
+
+            var stringContent =
+                new StringContent(JObject.FromObject(request).ToString(), Encoding.UTF8, "application/json");
+            using var consumer = new ConsumerBuilder<string, byte[]>(_consumerConfig).Build();
+            consumer.Subscribe("sorting_asc");
+
+            //Act
+            var response = await _client.PostAsync("api/sorting/sortasync", stringContent).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            var responseString = await response.Content.ReadAsStringAsync();
+
+
+
         }
     }
 }

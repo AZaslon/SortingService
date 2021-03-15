@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using JobsWebApiService.Commands;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using SortingWebApi.Commands;
-using SortingWebApi.JobsIterator;
 using SortingWebApi.Model;
+using SortingWebApi.Queries;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace SortingWebApi.Controllers
@@ -24,18 +21,22 @@ namespace SortingWebApi.Controllers
         private const string AscSortJobType = "sorting_asc";
         private readonly ILogger<SortingController> _logger;
         private readonly IScheduleJobCommandHandler _commandHandler;
-        private readonly IQuery<JobsStatisticsRequest, JobDescriptor> _getJobsQuery;
+        private readonly IQuery<JobsStatisticsRequest, IAsyncEnumerable<JobDescriptor>> _getJobsQuery;
+        private readonly IQuery<GetJobStatisticByIdRequest, Task<JobDescriptor>> _getJobByIdQuery;
 
         public SortingController(ILogger<SortingController> logger, IScheduleJobCommandHandler commandHandler,
-            IQuery<JobsStatisticsRequest, JobDescriptor> getJobsQuery)
+            IQuery<JobsStatisticsRequest, IAsyncEnumerable<JobDescriptor>> getJobsQuery,
+            IQuery<GetJobStatisticByIdRequest, Task<JobDescriptor>> getJobByIdQuery
+            )
         {
             _logger = logger;
             _commandHandler = commandHandler;
             _getJobsQuery = getJobsQuery;
+            _getJobByIdQuery = getJobByIdQuery;
         }
 
         [HttpPost("SortAsync")]
-        public async Task<ScheduleJobResponse> SortAsync([FromBody] ScheduleJobRequest job)
+        public async Task<JobDescriptor> SortAsync([FromBody] ScheduleJobRequest job)
         {
             _logger.LogDebug("Job request received.");
 
@@ -47,133 +48,61 @@ namespace SortingWebApi.Controllers
             //TODO: implement proper cancellation handling
             var jobDescriptor = await _commandHandler.HandleCommand(command, CancellationToken.None);
 
-            return new ScheduleJobResponse() { Id = jobDescriptor.Id };
+            return jobDescriptor;
         }
 
-        [HttpGet("{id}")]
-        public ScheduleJobResponse Get(string id)
+        [HttpGet("Get/{id}")]
+        public async Task<JobDescriptor> Get(string id)
         {
-            return new ScheduleJobResponse() {Id = id};
+            var cts = new CancellationTokenSource(_requestTimeout);
+            return await _getJobByIdQuery.ExecuteRequest(new GetJobStatisticByIdRequest(AscSortJobType, id), cts.Token);
         }
 
         [HttpGet]
         [Route("/DummyData")]
-        public Task<ScheduleJobResponse> GenerateDummyData()
+        public Task<JobDescriptor> GenerateDummyData()
         {
-            return SortAsync(new ScheduleJobRequest() {Payload = new int[] {1, 8, 10, 100, 5}});
+            return SortAsync(new ScheduleJobRequest() {Payload = GeneratePayload()});
+        }
+
+        private static int[] GeneratePayload()
+        {
+            var rand = new Random();
+            var array = new int[5];
+            for (int i = 0; i < array.Length-1; i++)
+            {
+                array[i] = rand.Next(99);
+            }
+            return new int[] {1, 8, 10, 100, 5};
         }
 
         [HttpGet]
-        [Route("/")]
-        public async IAsyncEnumerable<JobDescriptor> Index()
+        [Route("List")]
+        public async IAsyncEnumerable<JobDescriptor> List()
         {
             var cts = new CancellationTokenSource(_requestTimeout);
-            IAsyncEnumerable<JobDescriptor>? asyncEnumResults;
-            try
-            {
-                asyncEnumResults = _getJobsQuery.ExecuteRequest(new JobsStatisticsRequest(AscSortJobType), cts.Token);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed during iterating through jobs.");
-                throw;
-            }
+            var asyncEnumResults = _getJobsQuery.ExecuteRequest(new JobsStatisticsRequest(AscSortJobType), cts.Token);
 
             await foreach (var jobDescriptor in asyncEnumResults.WithCancellation(cts.Token))
             {
                 yield return jobDescriptor;
             }
         }
-    }
 
-    public class JobsStatisticsQuery: IQuery<JobsStatisticsRequest, JobDescriptor>
-    {
-        private readonly IDistributedCache _cache;
-        private readonly ILogger<JobsStatisticsQuery> _logger;
-        private readonly IPendingJobIdsIterator _pendingJobIds;
-
-        public JobsStatisticsQuery(IPendingJobIdsIterator pendingJobIds, IDistributedCache cache, ILogger<JobsStatisticsQuery> logger)
+        [HttpGet]
+        [Route("/")]
+        public ContentResult Index()
         {
-            _pendingJobIds = pendingJobIds;
-            _cache = cache;
-            _logger = logger;
-        }
-
-        //TODO: Implement pagination
-        /// <inheritdoc />
-        public async  IAsyncEnumerable<JobDescriptor> ExecuteRequest(JobsStatisticsRequest request,  [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            foreach (var id in _pendingJobIds.GetJobIds(request.JobType, cancellationToken))
+            return new ContentResult
             {
-                if (id != null)
-                {
-                    JobDescriptor job = new JobDescriptor(id, request.JobType, DateTime.MinValue, string.Empty, null, JobStatus.Failed, "Orphan job detected. Scheduled Job does not exists");
-                    
-                    try
-                    {
-                        //TODO: retry is necessary
-                        var bytes = await _cache.GetAsync(id, cancellationToken);
-                        if (bytes != null)
-                        {
-                            job = JsonConvert.DeserializeObject<JobDescriptor>(Encoding.UTF8.GetString(bytes));
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError(e, "Failed to obtain Job status");
-                        job.ErrorMsg = "Failed to obtain status: " + e.Message;
-                    }
-
-                    yield return job;
-                }
-            }
+                ContentType = "text/html",
+                StatusCode = (int) HttpStatusCode.OK,
+                Content = "<html><body>Welcome to sorting service Demo page.</body>" +
+                          "<p><a href='/api/sorting/list'> Shaw all jobs</a></p>" +
+                          "<p><a href='/DummyData'> Start job with autogenerated data.</a></p>" +
+                          "<p> <input type='text' name='jobid'/> To request Job status by ID <input type='button' value='Get status' onclick=\"window.location.href='/api/sorting/get/' +  document.getElementsByName('jobid')[0].value\" />" +
+                          "</html>"
+            };
         }
-    }
-
-    public class JobsStatisticsRequest : IRequest
-    {
-        public JobsStatisticsRequest(string jobType)
-        {
-            JobType = jobType;
-        }
-
-        public string JobType { get; }
-    }
-
-    public interface IQuery<in TRequest, out TResponse>
-    {
-        IAsyncEnumerable<TResponse> ExecuteRequest(TRequest request, CancellationToken cancellationToken);
-    }
-
-    //public class PagedResults<T>
-    //{
-    //    public PagedResults(IAsyncEnumerable<QueryPageResult<T>> pages)
-    //    {
-    //        Pages = pages;
-    //    }
-
-    //    public IAsyncEnumerable<QueryPageResult<T>> Pages { get;  }
-    //}
-
-    //public class QueryPageResult<T>
-    //{
-    //    public QueryPageResult(IEnumerable<T> items)
-    //    {
-    //        Items = items;
-    //    }
-    //    public IEnumerable<T> Items { get; }
-    //}
-
-    public interface IRequest
-    {
-    }
-
-    //public class PageInfo
-    //{
-    //}
-
-    public class ScheduleJobRequest
-    {
-        public int[] Payload { get; set; }
     }
 }

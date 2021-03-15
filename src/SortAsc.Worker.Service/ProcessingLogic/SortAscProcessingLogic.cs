@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SortAsc.Worker.Service.Model;
 
-namespace SortAsc.Worker.Service
+namespace SortAsc.Worker.Service.ProcessingLogic
 {
     public class SortAscProcessingLogic: IJobProcessingLogic
     {
@@ -14,11 +14,12 @@ namespace SortAsc.Worker.Service
             var arrayToSort = JsonConvert.DeserializeObject<int[]>(job.Payload);
            
             // simulating long running job
-            await Task.Delay(2000, cancellationToken).ConfigureAwait(false);
+            await Task.Delay(20000, cancellationToken).ConfigureAwait(false);
 
             Array.Sort(arrayToSort);
 
             job.Result = JsonConvert.SerializeObject(arrayToSort);
+            job.Status = JobStatus.Finished;
         }
     }
 }
