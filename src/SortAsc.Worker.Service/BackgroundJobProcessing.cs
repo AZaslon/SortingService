@@ -52,7 +52,7 @@ namespace SortAsc.Worker.Service
             {
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    _logger.LogDebug("BackgroundJobProcessing begins iteration after application start or recovering after failure.");
+                    _logger.LogDebug("Waiting for job.....");
                     try
                     {
                         await ProcessAndTrackJobStatus(_jobProcessingLogic, stoppingToken);
@@ -109,10 +109,12 @@ namespace SortAsc.Worker.Service
 
             try
             {
+                await TryUpsertJobInCache(job, stoppingToken);
+
                 // TODO: add retrier 
                 var processingTask = logic.ExecuteAsync(job, stoppingToken);
 
-               
+
                 while (!processingTask.IsCompleted)
                 {
                     await Task.Delay(_refreshStatusDelay, stoppingToken).ConfigureAwait(false);
@@ -122,6 +124,11 @@ namespace SortAsc.Worker.Service
 
                     _logger.LogDebug($"Updated job {job.Id} status: {job.Status}");
                 }
+
+                await processingTask; // bring exceptions if any;
+
+
+
             }
             catch (Exception ex)
             {
@@ -160,9 +167,5 @@ namespace SortAsc.Worker.Service
 
             return false;
         }
-    }
-
-    public class ServiceOptions
-    {
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SortAsc.Worker.Service.JobsQueue;
+using SortAsc.Worker.Service.ProcessingLogic;
 using SortingWebApi.Common;
 
 namespace SortAsc.Worker.Service

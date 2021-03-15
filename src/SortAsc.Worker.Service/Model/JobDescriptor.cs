@@ -1,4 +1,6 @@
 ﻿using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace SortAsc.Worker.Service.Model
 {
@@ -23,6 +25,7 @@ namespace SortAsc.Worker.Service.Model
             JobType = jobType;
             CreatedDateTime = createdDateTime;
             Payload = payload;
+            Status = status;
             ErrorMsg = errorMsg;
             JobSchedulingOptions = jobSchedulingOptions ?? new JobSchedulingOptions() {SlidingExpiration = TimeSpan.FromMinutes(10)};
         }
@@ -33,7 +36,7 @@ namespace SortAsc.Worker.Service.Model
         public string Payload { get; set;  }
         public JobSchedulingOptions JobSchedulingOptions { get; set; }
         public DateTime LastUpdated { get; set; }
-        public JobStatus Status { get; set; } = JobStatus.Created;
+        public JobStatus Status { get; set; } 
         public string? ErrorMsg { get; set; }
         public string? Result { get; set; }
     }

@@ -68,7 +68,7 @@ namespace SortAsc.Worker.Service.JobsQueue
                 SaslUsername = options.SaslUsername,
                 SaslPassword = options.SaslPassword,
                 GroupId = "worker",
-                AutoOffsetReset = AutoOffsetReset.Latest,
+                AutoOffsetReset = AutoOffsetReset.Earliest,
                 EnableAutoCommit = false,
                 LogConnectionClose = false,
 
