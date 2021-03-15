@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using JobsWebApiService.Commands;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SortingWebApi.Commands;
@@ -40,10 +39,7 @@ namespace SortingWebApi.Controllers
         {
             _logger.LogDebug("Job request received.");
 
-            var command = new ScheduleJobCommand {
-                JobType = AscSortJobType, 
-                JobPayload = JsonSerializer.Serialize(job.Payload)
-            };
+            var command = new ScheduleJobCommand(JsonSerializer.Serialize(job.Payload), AscSortJobType);
 
             //TODO: implement proper cancellation handling
             var jobDescriptor = await _commandHandler.HandleCommand(command, CancellationToken.None);

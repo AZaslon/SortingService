@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using JobsWebApiService.Commands;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -26,7 +25,7 @@ namespace SortingWebApi.Unit.Tests
             var cache = Substitute.For<IDistributedCache>();
             var queue = Substitute.For<IJobsQueue>();
 
-            var command = new ScheduleJobCommand() {JobPayload = "Test payload", JobType = "Test job type"};
+            var command = new ScheduleJobCommand("Test payload",  "Test job type");
             var logger = Substitute.For<ILogger<ScheduleJobCommandHandler>>();
 
             var sut = new ScheduleJobCommandHandler(cache, queue, logger);
@@ -49,7 +48,7 @@ namespace SortingWebApi.Unit.Tests
             var queue = Substitute.For<IJobsQueue>();
             var logger = Substitute.For<ILogger<ScheduleJobCommandHandler>>();
 
-            var command = new ScheduleJobCommand() {JobPayload = "Test payload", JobType = "Test job type"};
+            var command = new ScheduleJobCommand("Test payload", "Test job type");
 
             var sut = new ScheduleJobCommandHandler(cache, queue, logger);
 
@@ -73,7 +72,7 @@ namespace SortingWebApi.Unit.Tests
             var queue = Substitute.For<IJobsQueue>();
             var logger = Substitute.For<ILogger<ScheduleJobCommandHandler>>();
 
-            var command = new ScheduleJobCommand() {JobPayload = "Test payload", JobType = "Test job type"};
+            var command = new ScheduleJobCommand("Test payload", "Test job type");
 
             var sut = new ScheduleJobCommandHandler(cache, queue, logger);
 
