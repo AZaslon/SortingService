@@ -11,6 +11,22 @@ services:
       - "kafka"
       - "redis"
     ports:
+      - "6030:80"
+      - "6031:443"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+
+  sortasc.worker.service.replica:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - KafkaJobsQueueOptions__BootstrapServers=kafka:9093
+      - Redis__ConnectionString=redis:6379
+    depends_on:
+      - "kafka"
+      - "redis"
+    ports:
       - "6020:80"
       - "6021:443"
     volumes:

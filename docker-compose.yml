@@ -7,6 +7,12 @@ services:
       context: .
       dockerfile: src/SortAsc.Worker.Service/Dockerfile
 
+  sortasc.worker.service.replica:
+    image: ${DOCKER_REGISTRY-}sortascworkerservice
+    build:
+      context: .
+      dockerfile: src/SortAsc.Worker.Service/Dockerfile
+
   sortingwebapi:
     image: ${DOCKER_REGISTRY-}sortingwebapi
     build:
